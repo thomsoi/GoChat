@@ -1,0 +1,56 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: chatuser
+      POSTGRES_PASSWORD: chatpass
+      POSTGRES_DB: chatdb
+    ports:
+      - 1234:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chatuser -d chatdb"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+  
+  redis:
+    image: redis:8.10-alpine
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+
+  migrations:
+    profiles: ["migration"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgres://chatuser:chatpass@postgres:5432/chatdb?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["/app/migration-executable"]
+  
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    environment:
+      DATABASE_URL: postgres://chatuser:chatpass@postgres:5432/chatdb?sslmode=disable
+      JWT_SECRET: pII0e6WTEz3dfCySWRfgNsOAEGxX0ig1bWnFdcqOUtM=
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
