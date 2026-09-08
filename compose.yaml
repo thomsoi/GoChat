@@ -2,7 +2,7 @@ services:
   postgres:
     image: postgres:18-alpine
     environment:
-      POSTGRES_USER: chatuser
+      POSTGRES_USER: chatuser # Note that these are development only values
       POSTGRES_PASSWORD: chatpass
       POSTGRES_DB: chatdb
     ports:
