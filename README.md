@@ -1,3 +1,5 @@
+# Overview
+GoChat is a chat backend which exposes a RESTful API for state management and WebSocket connections for real-time messaging for both direct messages and group chats. Key features include creating chat rooms, getting message history, creating, updating and deleting messages, adding and removing users from chat rooms, and user sign-up and login with JWT-based authentication.
 # How to run
 In the root directory, run:  
 `docker compose build`  
