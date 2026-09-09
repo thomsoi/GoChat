@@ -1,3 +1,9 @@
+# How to run
+In the root directory, run:  
+`docker compose build`  
+`docker compose up -d`  
+`docker compose --profile migration run --rm migrations`
+
 # HTTP request lifecycle
 <img width="1422" height="716" alt="image" src="https://github.com/user-attachments/assets/f8058004-f17f-4859-a493-eef5e85f8764" />
 
