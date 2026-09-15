@@ -28,7 +28,7 @@ The client has a `send` channel so only one goroutine (the `writePump`) is writi
 The `readPump` is responsible for reading WebSocket messages and then sending it to the hub's `broadcast` channel where it is broadcast to every connected user. It will also persist the messages in PostgreSQL so message history can be obtained. The message flow for the `readPump` is from client to server.  
 
 The `Hub` manages the collection of currently connected WebSocket clients. This includes a map, where the key is the room ID and the value is a set of clients (members) which are currently connected to that room. It also has a global set of clients which are connected to any room, to easily check if a client is connected when trying to deregister them.  
-The Hub's map is shared state, so concurrent access must be controlled. This is why, instead of using mutexes, I made sure only one goroutine owns the map, and other goroutines can send messages via channels to the hub goroutine to register, deregister, or broadcast a message. This follows *"“Don't communicate by sharing memory; share memory by communicating"*.
+The Hub's map is shared state, so concurrent access must be controlled. This is why, instead of using mutexes, I made sure only one goroutine owns the map, and other goroutines can send messages via channels to the hub goroutine to register, deregister, or broadcast a message. This follows *“Don't communicate by sharing memory; share memory by communicating"*.
 
 **PostgreSQL represents the persistent state whereas the WebSocket Hub represents only the connections that are currently live.**
 
