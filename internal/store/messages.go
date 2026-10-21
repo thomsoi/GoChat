@@ -203,26 +203,34 @@ func (s *Store) UpdateMessage(ctx context.Context, id int64, content string) (*m
 // Soft delete so references still have the message identity.
 // When getting message history, if deleted_at is null then it will be retrieved.
 func (s *Store) DeleteMessage(ctx context.Context, id int64) error {
-	const query = `
-		UPDATE messages
-		SET deleted_at = NOW()
-		WHERE id = $1
-		  AND deleted_at IS NULL
-	`
+    const query = `
+        UPDATE messages
+        SET deleted_at = NOW()
+        WHERE id = $1
+          AND deleted_at IS NULL
+        RETURNING room_id
+    `
 
-	_, err := s.db.Exec(
-		ctx,
-		query,
-		id,
-	)
+    var roomID int64
 
-	if err != nil {
-		return fmt.Errorf("Error. Delete message: %w", err)
-	}
+    err := s.db.QueryRow(
+        ctx,
+        query,
+        id,
+    ).Scan(&roomID)
 
-	if err := s.cache.DeleteMessagesByRoom(ctx, id); err != nil {
-		log.Printf("Error message cache delete failed for room %d: %v", id, err)
-	}
+    if err != nil {
+        return fmt.Errorf("Error. Delete message: %w", err)
+    }
 
-	return nil
+    // Invalidate the cached message history for the correct room.
+    if err := s.cache.DeleteMessagesByRoom(ctx, roomID); err != nil {
+        log.Printf(
+            "Error message cache delete failed for room %d: %v",
+            roomID,
+            err,
+        )
+    }
+
+    return nil
 }
